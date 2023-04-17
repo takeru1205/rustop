@@ -9,6 +9,7 @@ use sysinfo::{CpuExt, System, SystemExt};
 
 const REFRESH: u64 = 500; // Frequency to get information
 const X: u16 = 10; // Left end line
+const Y_INIT: u16 = 10; // Start line
 
 fn main() -> Result<()> {
     let mut sys = System::new();
@@ -20,86 +21,10 @@ fn main() -> Result<()> {
     execute!(stdout, terminal::Clear(terminal::ClearType::All)).unwrap();
 
     for _ in 0..10 {
-        let mut y: u16 = 10;
-        // Cursor move to position
-        queue!(stdout, cursor::MoveTo(X, y)).unwrap();
-        y += 1;
-
-        // Refreshing all informations
-        sys.refresh_all();
-        // Get CPU Information
-        let mut cpu_usage_oneline = String::new();
-        for cpu in sys.cpus() {
-            cpu_usage_oneline.push_str(&format!("{:.2} ", cpu.cpu_usage()));
-        }
-        // Print the CPU usage and move to the next line
-        queue!(
-            stdout,
-            cursor::MoveTo(X, y),
-            Print(format!("{}", cpu_usage_oneline))
-        )
-        .unwrap();
-        y += 1;
-
-        // print memory usage
-        queue!(
-            stdout,
-            cursor::MoveTo(X, y),
-            Print(format!("total memory: {} bytes", sys.total_memory()))
-        )
-        .unwrap();
-        y += 1;
-        queue!(
-            stdout,
-            cursor::MoveTo(X, y),
-            Print(format!("used memory : {} bytes", sys.used_memory()))
-        )
-        .unwrap();
-        y += 1;
-        queue!(
-            stdout,
-            cursor::MoveTo(X, y),
-            Print(format!("total swap  : {} bytes", sys.total_swap()))
-        )
-        .unwrap();
-        y += 1;
-        queue!(
-            stdout,
-            cursor::MoveTo(X, y),
-            Print(format!("used swap   : {} bytes", sys.used_swap()))
-        )
-        .unwrap();
-        y += 1;
-
-        // Get GPU Usage
-        let memory_info = device.memory_info().unwrap();
-        // Print GPU usage
-        queue!(
-            stdout,
-            cursor::MoveTo(X, y),
-            Print(format!("Total GPU Memory: {:?}", memory_info.total))
-        )
-        .unwrap();
-        y += 1;
-        queue!(
-            stdout,
-            cursor::MoveTo(X, y),
-            Print(format!("Used GPU Memory: {:?}", memory_info.used))
-        )
-        .unwrap();
-
-        // Print blue frame
-        for y in 0..40 {
-            for x in 0..150 {
-                if (y == 0 || y == 40 - 1) || (x == 0 || x == 150 - 1) {
-                    queue!(
-                        stdout,
-                        cursor::MoveTo(x, y),
-                        style::PrintStyledContent("█".blue())
-                    )?;
-                }
-            }
-        }
+        display_cpu_info(&mut sys, &mut stdout)?;
+        display_memory_info(&mut sys, &mut stdout)?;
+        display_gpu_info(&device, &mut stdout)?;
+        draw_frame(&mut stdout)?;
 
         stdout.flush().unwrap();
 
@@ -107,5 +32,85 @@ fn main() -> Result<()> {
         std::thread::sleep(std::time::Duration::from_millis(REFRESH));
     }
     stdout.flush()?;
+    Ok(())
+}
+
+fn display_cpu_info(sys: &mut System, stdout: &mut impl Write) -> Result<()> {
+    let y = Y_INIT;
+
+    sys.refresh_cpu(); // Refreshing CPU information.
+    let cpu_usage_oneline = sys
+        .cpus()
+        .iter()
+        .map(|cpu| format!("{:.2} ", cpu.cpu_usage()))
+        .collect::<String>();
+
+    queue!(
+        stdout,
+        cursor::MoveTo(X, y),
+        Print(format!("CPU Usage: {}", cpu_usage_oneline))
+    )
+}
+
+fn display_memory_info(sys: &mut System, stdout: &mut impl Write) -> Result<()> {
+    let mut y = Y_INIT + 1;
+
+    sys.refresh_memory(); // Refreshing memory information.
+    let memory_usage: Vec<u64> = vec![
+        sys.total_memory(),
+        sys.used_memory(),
+        sys.total_swap(),
+        sys.used_swap(),
+    ];
+
+    let memory_use_case: Vec<String> = vec![
+        "total memory".to_string(),
+        "used memory".to_string(),
+        "total swap".to_string(),
+        "used swap".to_string(),
+    ];
+
+    for (case, usage) in memory_use_case.iter().zip(memory_usage.iter()) {
+        queue!(
+            stdout,
+            cursor::MoveTo(X, y),
+            Print(format!("{}: {} bytes", case, usage))
+        )?;
+        y += 1;
+    }
+    Ok(())
+}
+
+fn display_gpu_info(device: &nvml_wrapper::Device, stdout: &mut impl Write) -> Result<()> {
+    let y = Y_INIT + 5;
+
+    let memory_info = device.memory_info().unwrap();
+    queue!(
+        stdout,
+        cursor::MoveTo(X, y),
+        Print(format!("Total GPU Memory: {:?}", memory_info.total))
+    )?;
+    queue!(
+        stdout,
+        cursor::MoveTo(X, y + 1),
+        Print(format!("Used GPU Memory: {:?}", memory_info.used))
+    )
+}
+
+fn draw_frame(stdout: &mut impl Write) -> Result<()> {
+    let width = 150;
+    let height = 40;
+
+    for y in 0..height {
+        for x in 0..width {
+            if (y == 0 || y == height - 1) || (x == 0 || x == width - 1) {
+                queue!(
+                    stdout,
+                    cursor::MoveTo(x, y),
+                    style::PrintStyledContent("█".blue())
+                )?;
+            }
+        }
+    }
     Ok(())
 }
