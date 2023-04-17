@@ -18,7 +18,7 @@ fn main() -> Result<()> {
     for _ in 0..10 {
         let mut y: u16 = 10;
         // Cursor move to position
-        execute!(stdout, cursor::MoveTo(X, y)).unwrap();
+        queue!(stdout, cursor::MoveTo(X, y)).unwrap();
         y += 1;
 
         // Refreshing all informations
@@ -29,7 +29,6 @@ fn main() -> Result<()> {
             cpu_usage_oneline.push_str(&format!("{:.2} ", cpu.cpu_usage()));
         }
         // Print the CPU usage and move to the next line
-        writeln!(stdout, "{}", cpu_usage_oneline).unwrap();
         queue!(
             stdout,
             cursor::MoveTo(X, y),
