@@ -3,6 +3,7 @@ use crossterm::{
     style::{self, Print, Stylize},
     terminal, Result,
 };
+use nvml_wrapper::Nvml;
 use std::io::{stdout, Write};
 use sysinfo::{CpuExt, System, SystemExt};
 
@@ -11,8 +12,11 @@ const X: u16 = 10; // Left end line
 
 fn main() -> Result<()> {
     let mut sys = System::new();
-    let mut stdout = stdout();
+    let nvml = Nvml::init().unwrap();
+    let device = nvml.device_by_index(0).unwrap();
+
     // Refresh the default terminal
+    let mut stdout = stdout();
     execute!(stdout, terminal::Clear(terminal::ClearType::All)).unwrap();
 
     for _ in 0..10 {
@@ -63,6 +67,24 @@ fn main() -> Result<()> {
             stdout,
             cursor::MoveTo(X, y),
             Print(format!("used swap   : {} bytes", sys.used_swap()))
+        )
+        .unwrap();
+        y += 1;
+
+        // Get GPU Usage
+        let memory_info = device.memory_info().unwrap();
+        // Print GPU usage
+        queue!(
+            stdout,
+            cursor::MoveTo(X, y),
+            Print(format!("Total GPU Memory: {:?}", memory_info.total))
+        )
+        .unwrap();
+        y += 1;
+        queue!(
+            stdout,
+            cursor::MoveTo(X, y),
+            Print(format!("Used GPU Memory: {:?}", memory_info.used))
         )
         .unwrap();
 
