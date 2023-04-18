@@ -8,6 +8,8 @@ mod memory;
 mod nvidia;
 
 const REFRESH: u64 = 500; // Frequency to get information
+pub const WIDTH: u16 = 150; // Width of window
+pub const HEIGHT: u16 = 150; // Height of window
 pub const X: u16 = 10; // Left end line
 pub const Y_INIT: u16 = 10; // Start line
 
