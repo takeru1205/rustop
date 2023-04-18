@@ -8,6 +8,8 @@ mod memory;
 mod nvidia;
 
 const REFRESH: u64 = 500; // Frequency to get information
+pub const X: u16 = 10; // Left end line
+pub const Y_INIT: u16 = 10; // Start line
 
 fn main() -> Result<()> {
     let mut sys = System::new();
@@ -19,9 +21,10 @@ fn main() -> Result<()> {
     execute!(stdout, terminal::Clear(terminal::ClearType::All)).unwrap();
 
     for _ in 0..10 {
-        cpu::display_cpu_info(&mut sys, &mut stdout)?;
-        memory::display_memory_info(&mut sys, &mut stdout)?;
-        nvidia::display_gpu_info(&device, &mut stdout)?;
+        let mut y: u16 = 10;
+        y = cpu::display_cpu_info(&mut sys, &mut stdout, &mut y)?;
+        y = memory::display_memory_info(&mut sys, &mut stdout, &mut y)?;
+        _ = nvidia::display_gpu_info(&device, &mut stdout, &mut y)?;
         frame::draw_frame(&mut stdout)?;
 
         stdout.flush().unwrap();

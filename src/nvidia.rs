@@ -3,9 +3,6 @@ use nvml_wrapper::enum_wrappers::device::Brand;
 use std::fmt;
 use std::io::Write;
 
-const X: u16 = 10; // Left end line
-const Y_INIT: u16 = 10; // Start line
-
 // Wrapper for Brand enum
 pub struct BrandDisplayWrapper(pub Brand);
 
@@ -26,8 +23,11 @@ impl fmt::Display for BrandDisplayWrapper {
     }
 }
 
-pub fn display_gpu_info(device: &nvml_wrapper::Device, stdout: &mut impl Write) -> Result<()> {
-    let mut y = Y_INIT + 5;
+pub fn display_gpu_info(
+    device: &nvml_wrapper::Device,
+    stdout: &mut impl Write,
+    y: &mut u16,
+) -> Result<u16> {
     let memory_info = device.memory_info().unwrap();
 
     let gpu_usage: Vec<String> = vec![
@@ -47,11 +47,11 @@ pub fn display_gpu_info(device: &nvml_wrapper::Device, stdout: &mut impl Write) 
     for (case, usage) in gpu_use_case.iter().zip(gpu_usage.iter()) {
         queue!(
             stdout,
-            cursor::MoveTo(X, y),
+            cursor::MoveTo(crate::X, *y),
             Print(format!("{}: {}", case, usage))
         )?;
-        y += 1;
+        *y += 1;
     }
 
-    Ok(())
+    Ok(*y)
 }
