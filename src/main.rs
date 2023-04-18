@@ -3,13 +3,35 @@ use crossterm::{
     style::{self, Print, Stylize},
     terminal, Result,
 };
+use nvml_wrapper::enum_wrappers::device::Brand;
 use nvml_wrapper::Nvml;
+use std::fmt;
 use std::io::{stdout, Write};
 use sysinfo::{CpuExt, System, SystemExt};
 
 const REFRESH: u64 = 500; // Frequency to get information
 const X: u16 = 10; // Left end line
 const Y_INIT: u16 = 10; // Start line
+
+// Wrapper for Brand enum
+pub struct BrandDisplayWrapper(pub Brand);
+
+// Display trait for Brand
+impl fmt::Display for BrandDisplayWrapper {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match &self.0 {
+            Brand::Quadro => write!(f, "Quadro"),
+            Brand::Tesla => write!(f, "Tesla"),
+            Brand::Titan => write!(f, "Titan"),
+            Brand::TitanRTX => write!(f, "TitanRTX"),
+            Brand::GeForce => write!(f, "GeForce"),
+            Brand::GeForceRTX => write!(f, "GeForceRTX"),
+            Brand::Nvidia => write!(f, "Nvidia"),
+            Brand::NvidiaRTX => write!(f, "NvidiaRTX"),
+            _ => write!(f, "Unknown"),
+        }
+    }
+}
 
 fn main() -> Result<()> {
     let mut sys = System::new();
@@ -82,19 +104,33 @@ fn display_memory_info(sys: &mut System, stdout: &mut impl Write) -> Result<()> 
 }
 
 fn display_gpu_info(device: &nvml_wrapper::Device, stdout: &mut impl Write) -> Result<()> {
-    let y = Y_INIT + 5;
-
+    let mut y = Y_INIT + 5;
     let memory_info = device.memory_info().unwrap();
-    queue!(
-        stdout,
-        cursor::MoveTo(X, y),
-        Print(format!("Total GPU Memory: {:?}", memory_info.total))
-    )?;
-    queue!(
-        stdout,
-        cursor::MoveTo(X, y + 1),
-        Print(format!("Used GPU Memory: {:?}", memory_info.used))
-    )
+
+    let gpu_usage: Vec<String> = vec![
+        BrandDisplayWrapper(device.brand().unwrap()).to_string(),
+        device.fan_speed(0).unwrap().to_string(),
+        memory_info.total.to_string(),
+        memory_info.used.to_string(),
+    ];
+
+    let gpu_use_case: Vec<String> = vec![
+        "Brand: ".to_string(),
+        "Fan Speed: ".to_string(),
+        "Total GPU Memory: ".to_string(),
+        "Used GPU Memory: ".to_string(),
+    ];
+
+    for (case, usage) in gpu_use_case.iter().zip(gpu_usage.iter()) {
+        queue!(
+            stdout,
+            cursor::MoveTo(X, y),
+            Print(format!("{}: {}", case, usage))
+        )?;
+        y += 1;
+    }
+
+    Ok(())
 }
 
 fn draw_frame(stdout: &mut impl Write) -> Result<()> {
