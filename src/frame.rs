@@ -6,12 +6,9 @@ use crossterm::{
 use std::io::Write;
 
 pub fn draw_frame(stdout: &mut impl Write) -> Result<()> {
-    let width = 150;
-    let height = 40;
-
-    for y in 0..height {
-        for x in 0..width {
-            if (y == 0 || y == height - 1) || (x == 0 || x == width - 1) {
+    for y in 0..crate::HEIGHT {
+        for x in 0..crate::WIDTH {
+            if (y == 0 || y == crate::HEIGHT - 1) || (x == 0 || x == crate::WIDTH - 1) {
                 queue!(
                     stdout,
                     cursor::MoveTo(x, y),
