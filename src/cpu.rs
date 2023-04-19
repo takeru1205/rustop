@@ -6,12 +6,18 @@ use crossterm::{
 use std::io::Write;
 use sysinfo::{CpuExt, System, SystemExt};
 
-pub fn display_cpu_info(sys: &mut System, stdout: &mut impl Write, y: &mut u16) -> Result<u16> {
+pub fn display_cpu_info(
+    sys: &mut System,
+    stdout: &mut impl Write,
+    y: &mut u16,
+    width: u16,
+) -> Result<u16> {
     sys.refresh_cpu(); // Refreshing CPU information.
 
     for cpu in sys.cpus().iter() {
-        // let cpu_usage: u16 = (cpu.cpu_usage() / (crate::WIDTH as f32) * 100.0) as u16;
-        let cpu_usage: u16 = cpu.cpu_usage() as u16;
+        // let cpu_usage: u16 = ((100. as f32) / 100. * ((width - crate::EDGE) as f32)) as u16;
+        let cpu_usage: u16 =
+            ((cpu.cpu_usage() as f32) / 100. * ((width - crate::EDGE) as f32)) as u16;
         // Change color bar depends on usage
         let print_style: style::PrintStyledContent<&str>;
         if cpu_usage < 40 {
