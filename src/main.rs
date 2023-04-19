@@ -1,4 +1,5 @@
-use crossterm::{cursor, execute, queue, style::Print, terminal, Result};
+// use crossterm::{cursor, execute, queue, style::Print, terminal, Result};
+use crossterm::{execute, terminal, Result};
 use nvml_wrapper::Nvml;
 use std::io::{stdout, Write};
 use sysinfo::{System, SystemExt};
@@ -22,22 +23,17 @@ fn main() -> Result<()> {
     // Refresh the default terminal
     let mut stdout = stdout();
     execute!(stdout, terminal::Clear(terminal::ClearType::All)).unwrap();
+
     let (width, _) = terminal::size().unwrap(); // get Terminal size
 
     for _ in 0..10 {
         let mut y: u16 = Y_INIT;
-        queue!(
-            stdout,
-            cursor::MoveTo(crate::X, y),
-            Print(format!("{:?}", terminal::size()))
-        )
-        .unwrap();
-        y += 1;
         y = cpu::display_cpu_info(&mut sys, &mut stdout, &mut y, width)?;
         y = memory::display_memory_info(&mut sys, &mut stdout, &mut y)?;
         _ = nvidia::display_gpu_info(&device, &mut stdout, &mut y)?;
         frame::draw_frame(&mut stdout)?;
 
+        // Refresh the terminal
         stdout.flush().unwrap();
 
         // Sleep between updates
