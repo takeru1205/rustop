@@ -3,8 +3,6 @@ use std::io::Write;
 use sysinfo::{System, SystemExt};
 
 pub fn display_memory_info(sys: &mut System, stdout: &mut impl Write, y: &mut u16) -> Result<u16> {
-    // let mut y = Y_INIT + 1;
-
     sys.refresh_memory(); // Refreshing memory information.
     let memory_usage: Vec<u64> = vec![
         sys.total_memory(),
