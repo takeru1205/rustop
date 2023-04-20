@@ -1,11 +1,12 @@
-// use crossterm::{cursor, execute, queue, style::Print, terminal, Result};
-use crossterm::{execute, terminal, Result};
+use crossterm::{cursor, execute, queue, style::Print, terminal, Result};
+// use crossterm::{execute, terminal, Result};
 use nvml_wrapper::Nvml;
 use std::io::{stdout, Write};
 use sysinfo::{System, SystemExt};
 mod cpu;
 mod frame;
 mod memory;
+mod model;
 mod nvidia;
 
 pub const EDGE: u16 = 3; // Edge of frame
@@ -17,13 +18,21 @@ fn main() -> Result<()> {
     let mut sys = System::new();
     let nvml = Nvml::init().unwrap();
     let device = nvml.device_by_index(0).unwrap();
+    let cpu_model = model::get_cpu_model().unwrap();
 
     // Refresh the default terminal
     let mut stdout = stdout();
     execute!(stdout, terminal::Clear(terminal::ClearType::All)).unwrap();
 
     for _ in 0..10 {
-        let mut y: u16 = Y_INIT;
+        // Display the CPU model
+        queue!(
+            stdout,
+            cursor::MoveTo(crate::X, Y_INIT),
+            Print(format!("{}", cpu_model))
+        )?;
+        let mut y: u16 = Y_INIT + 1;
+
         y = cpu::display_cpu_info(&mut sys, &mut stdout, &mut y)?;
         y = memory::display_memory_info(&mut sys, &mut stdout, &mut y)?;
         _ = nvidia::display_gpu_info(&device, &mut stdout, &mut y)?;
