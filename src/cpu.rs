@@ -2,7 +2,6 @@ use crate::bar;
 use crossterm::Result;
 use std::io::Write;
 use sysinfo::{CpuExt, System, SystemExt};
-// use sysinfo::{System, SystemExt};
 
 pub fn display_cpu_info(sys: &mut System, stdout: &mut impl Write, y: &mut u16) -> Result<u16> {
     sys.refresh_cpu(); // Refreshing CPU information.
