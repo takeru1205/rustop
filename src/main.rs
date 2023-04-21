@@ -3,6 +3,7 @@ use crossterm::{cursor, execute, queue, style::Print, terminal, Result};
 use nvml_wrapper::Nvml;
 use std::io::{stdout, Write};
 use sysinfo::{System, SystemExt};
+mod bar;
 mod cpu;
 mod frame;
 mod memory;
@@ -45,5 +46,6 @@ fn main() -> Result<()> {
         std::thread::sleep(std::time::Duration::from_millis(REFRESH));
     }
     stdout.flush()?;
+    println!("");
     Ok(())
 }
