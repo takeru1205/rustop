@@ -5,6 +5,7 @@ use crossterm::{
 };
 use std::io::Write;
 
+// enum to display core id or RAM/Swap
 pub enum PreID {
     Num(u16),
     DispName(String),
@@ -19,7 +20,7 @@ pub fn display_usage_bar(
 ) -> Result<()> {
     let (width, _) = terminal::size().unwrap();
 
-    let half_width = (width - 3) / 2;
+    let half_width = (width - crate::EDGE) / 2;
 
     // Adjust the maximum width of the bar based on screen width
     let bar_max_width = (width - crate::EDGE * 2 - 10) / 2;
