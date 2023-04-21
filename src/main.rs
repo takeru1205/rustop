@@ -35,7 +35,9 @@ fn main() -> Result<()> {
         let mut y: u16 = Y_INIT + 1;
 
         y = cpu::display_cpu_info(&mut sys, &mut stdout, &mut y)?;
+        y += 1;
         y = memory::display_memory_info(&mut sys, &mut stdout, &mut y)?;
+        y += 1;
         _ = nvidia::display_gpu_info(&device, &mut stdout, &mut y)?;
         frame::draw_frame(&mut stdout)?;
 
