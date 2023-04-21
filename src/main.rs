@@ -10,7 +10,7 @@ mod memory;
 mod model;
 mod nvidia;
 
-pub const EDGE: u16 = 3; // Edge of frame
+pub const EDGE: u16 = 4; // Edge of frame
 pub const X: u16 = 10; // Left end line
 pub const Y_INIT: u16 = 1; // Start line
 const REFRESH: u64 = 500; // Frequency to refresh information
