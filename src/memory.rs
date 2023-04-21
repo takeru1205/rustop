@@ -58,6 +58,7 @@ pub fn display_memory_info(sys: &mut System, stdout: &mut impl Write, y: &mut u1
     Ok(*y)
 }
 
-fn mem_to_mb(mem: u64) -> f64 {
+// FIXME
+pub fn mem_to_mb(mem: u64) -> f64 {
     (mem * 1024) as f64 / (1024. * 1024.)
 }
