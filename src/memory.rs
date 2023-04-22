@@ -1,6 +1,9 @@
-use crate::bar;
-use crate::bar::PreID;
-use crossterm::{cursor, queue, style::Print, terminal, Result};
+use crate::pie_chart;
+use crossterm::{
+    cursor, queue,
+    style::{Color, Print, SetForegroundColor},
+    terminal, Result,
+};
 use std::io::Write;
 use sysinfo::{System, SystemExt};
 
@@ -12,47 +15,58 @@ pub fn display_memory_info(sys: &mut System, stdout: &mut impl Write, y: &mut u1
     // Display memory usage info
     let used_mem_mb = mem_to_mb(sys.used_memory());
     let total_mem_mb = mem_to_mb(sys.total_memory());
-    let memory_usage_percentage = used_mem_mb / total_mem_mb * 100.;
-    _ = &mut bar::display_usage_bar(
-        memory_usage_percentage as f32,
-        0,
+    // let memory_usage_percentage = used_mem_mb / total_mem_mb * 100.;
+    // Display Swap usage info
+    let used_swap_mb = mem_to_mb(sys.used_swap());
+    let total_swap_mb = mem_to_mb(sys.total_swap());
+    // let swap_usage_percentage = used_swap_mb / total_swap_mb * 100.;
+
+    *y += 1;
+    // Display Pie Chart
+    // Display Memory usage
+    *y = pie_chart::display_pie_chart(
         stdout,
         y,
-        PreID::DispName("RAM".to_string()),
+        &mut vec![used_mem_mb as usize, (total_mem_mb - used_mem_mb) as usize],
+        0,
     )
     .unwrap();
+
+    // Display swap usage
+    *y = pie_chart::display_pie_chart(
+        stdout,
+        y,
+        &mut vec![
+            used_swap_mb as usize,
+            (total_swap_mb - used_swap_mb) as usize,
+        ],
+        1,
+    )
+    .unwrap();
+    *y += 1 + crate::RADIUS;
+
     queue!(
         stdout,
-        cursor::MoveTo(crate::EDGE + half_width, *y),
+        cursor::MoveTo(crate::EDGE + 3, *y),
+        SetForegroundColor(Color::White),
         Print(format!(
             "{0: >10} MB / {1: >10} MB",
             used_mem_mb, total_mem_mb
         ))
     )
     .unwrap();
-    *y += 1;
 
-    // Display Swap usage info
-    let used_swap_mb = mem_to_mb(sys.used_swap());
-    let total_swap_mb = mem_to_mb(sys.total_swap());
-    let swap_usage_percentage = used_swap_mb / total_swap_mb * 100.;
-    _ = &mut bar::display_usage_bar(
-        swap_usage_percentage as f32,
-        0,
-        stdout,
-        y,
-        PreID::DispName("Swap".to_string()),
-    )
-    .unwrap();
     queue!(
         stdout,
-        cursor::MoveTo(crate::EDGE + half_width, *y),
+        cursor::MoveTo(crate::EDGE + half_width + 3, *y),
+        SetForegroundColor(Color::White),
         Print(format!(
             "{0: >10} MB / {1: >10} MB",
             used_swap_mb, total_swap_mb
         ))
     )
     .unwrap();
+
     *y += 1;
 
     Ok(*y)

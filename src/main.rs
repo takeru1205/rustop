@@ -9,8 +9,10 @@ mod frame;
 mod memory;
 mod model;
 mod nvidia;
+mod pie_chart;
 
 pub const EDGE: u16 = 4; // Edge of frame
+pub const RADIUS: u16 = 10; // Radius of pie chart
 pub const X: u16 = 10; // Left end line
 pub const Y_INIT: u16 = 1; // Start line
 const REFRESH: u64 = 500; // Frequency to refresh information
