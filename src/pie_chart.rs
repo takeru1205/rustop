@@ -13,7 +13,8 @@ pub fn display_pie_chart(
     index: u16,
 ) -> Result<u16> {
     let (width, _) = terminal::size().unwrap();
-    let half_width = (width - crate::EDGE) / 2;
+    // let half_width = (width - crate::EDGE) / 2;
+    let third_width = (width - crate::EDGE) / 3;
 
     if data.iter().sum::<usize>() < 1 {
         *data = vec![0, 1];
@@ -31,7 +32,8 @@ pub fn display_pie_chart(
 
     let start_angle_offset = 270.0 - ((max_index as f32) * 3.6);
 
-    let x_offset = (crate::EDGE + index * half_width) as f32;
+    // let x_offset = (crate::EDGE + index * half_width) as f32;
+    let x_offset = (crate::EDGE + index * third_width) as f32;
     let y_offset = y.clone();
     // Draw pie chart
     for (i, (value, label)) in normalized_data.iter().zip(labels.iter()).enumerate() {
