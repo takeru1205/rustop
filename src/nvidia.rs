@@ -1,7 +1,10 @@
-use crate::bar;
-use crate::bar::PreID;
 use crate::memory::mem_to_mb;
-use crossterm::{cursor, queue, style::Print, terminal, Result};
+use crate::pie_chart;
+use crossterm::{
+    cursor, queue,
+    style::{Color, Print, SetForegroundColor},
+    terminal, Result,
+};
 use nvml_wrapper::enum_wrappers::device::Brand;
 use std::fmt;
 use std::io::Write;
@@ -33,65 +36,44 @@ pub fn display_gpu_info(
 ) -> Result<u16> {
     let memory_info = device.memory_info().unwrap();
     let (width, _) = terminal::size().unwrap();
-    let half_width = (width - crate::EDGE) / 2;
-
-    let gpu_usage: Vec<String> = vec![
-        device.fan_speed(0).unwrap().to_string(),
-        memory_info.total.to_string(),
-        memory_info.used.to_string(),
-    ];
-
+    let third_width = (width - crate::EDGE) / 3;
     // Display GPU Brand
     queue!(
         stdout,
-        cursor::MoveTo(crate::X, *y),
+        cursor::MoveTo(crate::EDGE + third_width * 2 + 3, *y),
         Print(format!(
             "NVIDIA {}",
             BrandDisplayWrapper(device.brand().unwrap()).to_string()
         ))
     )?;
-    *y += 1;
 
-    // Display GPU usage bar
+    // Draw pie chart
     let used_gpu_mb = mem_to_mb(memory_info.used);
     let total_gpu_mb = mem_to_mb(memory_info.total);
-    let gpu_usage_percentage = used_gpu_mb / total_gpu_mb * 100.;
-    _ = &mut bar::display_usage_bar(
-        gpu_usage_percentage as f32,
-        0,
+    *y += 1;
+
+    *y = pie_chart::display_pie_chart(
         stdout,
         y,
-        PreID::DispName("VRAM".to_string()),
+        &mut vec![used_gpu_mb as usize, (total_gpu_mb - used_gpu_mb) as usize],
+        2,
     )
     .unwrap();
+
+    *y += 1 + crate::RADIUS;
+
     queue!(
         stdout,
-        cursor::MoveTo(crate::EDGE + half_width, *y),
+        cursor::MoveTo(crate::EDGE + third_width * 2 + 3, *y),
+        SetForegroundColor(Color::White),
         Print(format!(
             "{0: >10} MB / {1: >10} MB",
             used_gpu_mb, total_gpu_mb
         ))
     )
     .unwrap();
-    *y += 1;
 
     // TODO: Display Fan speed bar
-
-    let gpu_use_case: Vec<String> = vec![
-        "Fan Speed: ".to_string(),
-        "Total GPU Memory: ".to_string(),
-        "Used GPU Memory: ".to_string(),
-    ];
-
-    for (case, usage) in gpu_use_case.iter().zip(gpu_usage.iter()) {
-        queue!(
-            stdout,
-            cursor::MoveTo(crate::X, *y),
-            Print(format!("{}: {}", case, usage))
-        )
-        .unwrap();
-        *y += 1;
-    }
 
     Ok(*y)
 }
