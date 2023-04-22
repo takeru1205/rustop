@@ -5,18 +5,13 @@ use crossterm::{
 };
 use std::io::Write;
 
-// enum to display core id or RAM/Swap
-pub enum PreID {
-    Num(u16),
-    DispName(String),
-}
-
 pub fn display_usage_bar(
     usage: f32,
     index: u16,
     stdout: &mut impl Write,
     y: &mut u16,
-    preid: PreID,
+    // preid: PreID,
+    preid: u16,
 ) -> Result<()> {
     let (width, _) = terminal::size().unwrap();
 
@@ -25,7 +20,6 @@ pub fn display_usage_bar(
     // Adjust the maximum width of the bar based on screen width
     let bar_max_width = (width - crate::EDGE * 2 - 10) / 2;
 
-    // let usage = 100 as f32;
     let usage_bar_width: u16 = (usage / 100.0 * (bar_max_width as f32)) as u16;
 
     let print_style: style::PrintStyledContent<&str>;
@@ -46,24 +40,12 @@ pub fn display_usage_bar(
         queue!(stdout, cursor::MoveTo(x, *y), Print(" ")).unwrap();
     }
 
-    match preid {
-        PreID::Num(value) => {
-            queue!(
-                stdout,
-                cursor::MoveTo(crate::EDGE + index as u16 * half_width, *y),
-                Print(format!("{:>2}", value))
-            )
-            .unwrap();
-        }
-        PreID::DispName(s) => {
-            queue!(
-                stdout,
-                cursor::MoveTo(crate::EDGE - 1 + index as u16 * half_width, *y),
-                Print(format!("{:>2}", s))
-            )
-            .unwrap();
-        }
-    }
+    queue!(
+        stdout,
+        cursor::MoveTo(crate::EDGE + index as u16 * half_width, *y),
+        Print(format!("{:>2}", preid))
+    )
+    .unwrap();
 
     Ok(())
 }
