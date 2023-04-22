@@ -48,7 +48,7 @@ pub fn display_memory_info(sys: &mut System, stdout: &mut impl Write, y: &mut u1
         cursor::MoveTo(crate::EDGE + 3, *y),
         SetForegroundColor(Color::White),
         Print(format!(
-            "{0: >10} MB / {1: >10} MB",
+            "{0: >8} MB / {1: >8} MB",
             used_mem_mb, total_mem_mb
         ))
     )
@@ -59,7 +59,7 @@ pub fn display_memory_info(sys: &mut System, stdout: &mut impl Write, y: &mut u1
         cursor::MoveTo(crate::EDGE + third_width + 3, *y),
         SetForegroundColor(Color::White),
         Print(format!(
-            "{0: >10} MB / {1: >10} MB",
+            "{0: >8} MB / {1: >8} MB",
             used_swap_mb, total_swap_mb
         ))
     )
@@ -70,7 +70,6 @@ pub fn display_memory_info(sys: &mut System, stdout: &mut impl Write, y: &mut u1
     Ok(*y)
 }
 
-// FIXME
-pub fn mem_to_mb(mem: u64) -> f64 {
-    (mem * 1024) as f64 / (1024. * 1024.)
+pub fn mem_to_mb(mem: u64) -> i32 {
+    (mem as f64 / (1024. * 1024.)) as i32
 }
