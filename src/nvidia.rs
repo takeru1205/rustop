@@ -40,7 +40,7 @@ pub fn display_gpu_info(
     // Display GPU Brand
     queue!(
         stdout,
-        cursor::MoveTo(crate::EDGE + third_width * 2 + 3, *y),
+        cursor::MoveTo(crate::EDGE + third_width * 2 + 13, *y),
         Print(format!(
             "NVIDIA {}",
             BrandDisplayWrapper(device.brand().unwrap()).to_string()
@@ -67,7 +67,7 @@ pub fn display_gpu_info(
         cursor::MoveTo(crate::EDGE + third_width * 2 + 3, *y),
         SetForegroundColor(Color::White),
         Print(format!(
-            "{0: >10} MB / {1: >10} MB",
+            "{0: >8} MB / {1: >8} MB",
             used_gpu_mb, total_gpu_mb
         ))
     )
