@@ -10,16 +10,14 @@ use sysinfo::{System, SystemExt};
 pub fn display_memory_info(sys: &mut System, stdout: &mut impl Write, y: &mut u16) -> Result<u16> {
     sys.refresh_memory(); // Refreshing memory information.
     let (width, _) = terminal::size().unwrap();
-    let half_width = (width - crate::EDGE) / 2;
+    let third_width = (width - crate::EDGE) / 3;
 
     // Display memory usage info
     let used_mem_mb = mem_to_mb(sys.used_memory());
     let total_mem_mb = mem_to_mb(sys.total_memory());
-    // let memory_usage_percentage = used_mem_mb / total_mem_mb * 100.;
     // Display Swap usage info
     let used_swap_mb = mem_to_mb(sys.used_swap());
     let total_swap_mb = mem_to_mb(sys.total_swap());
-    // let swap_usage_percentage = used_swap_mb / total_swap_mb * 100.;
 
     *y += 1;
     // Display Pie Chart
@@ -58,7 +56,7 @@ pub fn display_memory_info(sys: &mut System, stdout: &mut impl Write, y: &mut u1
 
     queue!(
         stdout,
-        cursor::MoveTo(crate::EDGE + half_width + 3, *y),
+        cursor::MoveTo(crate::EDGE + third_width + 3, *y),
         SetForegroundColor(Color::White),
         Print(format!(
             "{0: >10} MB / {1: >10} MB",
