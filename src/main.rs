@@ -38,9 +38,9 @@ fn main() -> Result<()> {
 
         y = cpu::display_cpu_info(&mut sys, &mut stdout, &mut y)?;
         y += 1;
-        y = memory::display_memory_info(&mut sys, &mut stdout, &mut y)?;
-        y += 1;
-        _ = nvidia::display_gpu_info(&device, &mut stdout, &mut y)?;
+        let mut mem_y = y.clone();
+        _ = memory::display_memory_info(&mut sys, &mut stdout, &mut y)?;
+        _ = nvidia::display_gpu_info(&device, &mut stdout, &mut mem_y)?;
         frame::draw_frame(&mut stdout)?;
 
         // Refresh the terminal
